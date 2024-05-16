@@ -33,7 +33,7 @@ struct server
 
     void main(int argc, char** argv)
     {
-        std::cout << "Rs-server is running\n";
+        std::cout << "Starting Rs-server...\n";
 
         START_EASYLOGGINGPP(argc, argv);
 
@@ -77,6 +77,7 @@ struct server
         if(rtspServer == NULL)
         {
             *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
+            std::cerr << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
             exit(1);
         }
 
@@ -188,6 +189,7 @@ struct server
             }
 
                 *env << "Ignoring stream: format: " << stream.format() << " width: " << stream.width() << " height: " << stream.height() << " fps: " << stream.fps() << "\n";
+                std::cerr << "  -- Ignoring stream: format: " << stream.format() << " width: " << stream.width() << " height: " << stream.height() << " fps: " << stream.fps() << "\n";
             }
 
             calculate_extrinsics();
@@ -195,6 +197,7 @@ struct server
             rtspServer->addServerMediaSession(sms);
             char* url = rtspServer->rtspURL(sms);
             *env << "Play this stream using the URL \"" << url << "\"\n";
+            std::cout << "Play this stream using the URL \"" << url << "\"\n";
 
             // query camera options
             rtspServer->setSupportedOptions(sensor.getSensorName(), sensor.getSupportedOptions());
