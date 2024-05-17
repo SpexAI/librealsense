@@ -126,6 +126,37 @@ std::string RsSensor::getSensorName()
     }
 }
 
+const char* RsSensor::getSessionName()
+{
+    return m_sessname.c_str();
+    /*
+    if(m_sensor.supports(RS2_CAMERA_INFO_NAME))
+    {
+        // W/A for L515 sensor name
+        std::string str = m_sensor.get_info(RS2_CAMERA_INFO_NAME);
+        if (str.compare(L500_SENSOR_NAME) == 0 || str.compare(STEREO_SENSOR_NAME) == 0)
+        {
+            return "depth";
+        }
+        else if (str.compare(RGB_SENSOR_NAME) == 0 )
+        {
+            return "rgb";
+        }
+        else
+            return str.c_str();
+    }
+    else
+    {
+        return "unknown";
+    }
+    */
+}
+
+void RsSensor::setSessionName(char *sessname)
+{
+    m_sessname = sessname;
+}
+
 std::vector<RsOption> RsSensor::getSupportedOptions()
 {
     std::vector<RsOption> returnedVector;

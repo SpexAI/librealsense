@@ -34,6 +34,8 @@ public:
     }
     static long long int getStreamProfileKey(rs2::stream_profile t_profile);
     std::string getSensorName();
+    const char *getSessionName();
+    void setSessionName(char *sessname);
     rs2::device getDevice()
     {
         return m_device;
@@ -43,6 +45,7 @@ public:
 private:
     UsageEnvironment* env;
     rs2::sensor m_sensor;
+    std::string m_sessname;
     std::unordered_map<long long int, rs2::video_stream_profile> m_streamProfiles;
     std::unordered_map<long long int, std::shared_ptr<ICompression>> m_iCompress;
     rs2::device m_device;

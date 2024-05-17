@@ -1,8 +1,11 @@
 // License: Apache 2.0. See LICENSE file in root directory.
 // Copyright(c) 2020 Intel Corporation. All Rights Reserved.
+// Copyright(c) 2024 SpexAI. All Rights Reserved.
+// SpexAI spex-net branch: for multiple devices
 
 #include <iostream>
 
+#include <cstring>
 #include <liveMedia.hh>
 #include <GroupsockHelper.hh>
 #include <signal.h>
@@ -33,19 +36,25 @@ struct server
 
     void main(int argc, char** argv)
     {
-        std::cout << "Starting Rs-server...\n";
+        unsigned int nth_device = 0;
+        bool rgb_only = false;
+        int have_streams = 0;
 
         START_EASYLOGGINGPP(argc, argv);
 
-        CmdLine cmd("LRS Network Extentions Server", ' ', RS2_API_VERSION_STR);
+        CmdLine cmd("LRS Network Extensions Server (extended by SpexAI)", ' ', RS2_API_VERSION_STR);
 
         SwitchArg arg_enable_compression("c", "enable-compression", "Enable video compression");
-        ValueArg<std::string> arg_address("i", "interface-address", "Address of the interface to bind on", false, "", "string");
-        ValueArg<unsigned int> arg_port("p", "port", "RTSP port to listen on", false, 8554, "integer");
+        SwitchArg arg_rgb_only("r", "rgb-only", "Only RGB cameras");
+        ValueArg<std::string> arg_address("i", "interface-address", "Address of the interface to bind on (default: 0.0.0.0)", false, "", "string");
+        ValueArg<unsigned int> arg_port("p", "port", "RTSP port to listen on (default: 8554)", false, 8554, "integer");
+        ValueArg<unsigned int> arg_device("d", "device", "Enable n-th device only, starting with 1", false, 0, "integer");
 
         cmd.add(arg_enable_compression);
+        cmd.add(arg_rgb_only);
         cmd.add(arg_address);
         cmd.add(arg_port);
+        cmd.add(arg_device);
 
         cmd.parse(argc, argv);
 
@@ -54,15 +63,27 @@ struct server
         {
             CompressionFactory::getIsEnabled() = 1;
         }
+        if (arg_rgb_only.isSet())
+        {
+            rgb_only = arg_rgb_only.getValue();
+        }
 
         if (arg_address.isSet()) 
         {
             ReceivingInterfaceAddr = inet_addr(arg_address.getValue().c_str());
         }
+        else
+        {
+            ReceivingInterfaceAddr = inet_addr("0.0.0.0");
+        }
 
         if (arg_port.isSet())
         {
             port = arg_port.getValue();
+        }
+        if (arg_device.isSet())
+        {
+            nth_device = arg_device.getValue();
         }
         
         OutPacketBuffer::increaseMaxSizeTo(MAX_MESSAGE_SIZE);
@@ -82,16 +103,34 @@ struct server
         }
 
         sensors = rsDevice.get()->getSensors();
+        unsigned i = 0;
+        char old_serial[80] = { 0 };
         for(auto sensor : sensors)
         {
+            char sessname[60];
             RsServerMediaSession* sms;
-            if(sensor.getSensorName().compare(STEREO_SENSOR_NAME) == 0 || sensor.getSensorName().compare(RGB_SENSOR_NAME) == 0)
+            const char *serial = sensor.getDevice().get_info( RS2_CAMERA_INFO_SERIAL_NUMBER );
+            if (strcmp(serial, old_serial)) { // if new
+                i++;
+                strncpy(old_serial, serial, sizeof(old_serial) - 1);
+            }
+            if (nth_device > 0 && nth_device != i)
+                continue;
+            if((sensor.getSensorName().compare(STEREO_SENSOR_NAME) == 0) && !rgb_only)
             {
-                sms = RsServerMediaSession::createNew(*env, sensor, sensor.getSensorName().data(), "", "Session streamed by \"realsense streamer\"", False);
+                snprintf(sessname, sizeof(sessname), "%u/depth", i);
+                sensor.setSessionName(sessname);
+                sms = RsServerMediaSession::createNew(*env, sensor, sessname, "", "Session streamed by \"realsense streamer\"", False);
+            }
+            else if(sensor.getSensorName().compare(RGB_SENSOR_NAME) == 0)
+            {
+                snprintf(sessname, sizeof(sessname), "%u/rgb", i);
+                sensor.setSessionName(sessname);
+                sms = RsServerMediaSession::createNew(*env, sensor, sessname, "", "Session streamed by \"realsense streamer\"", False);
             }
             else
             {
-                break;
+                continue;
             }
 
             for(auto stream_profile : sensor.getStreamProfiles())
@@ -189,23 +228,29 @@ struct server
             }
 
                 *env << "Ignoring stream: format: " << stream.format() << " width: " << stream.width() << " height: " << stream.height() << " fps: " << stream.fps() << "\n";
-                std::cerr << "  -- Ignoring stream: format: " << stream.format() << " width: " << stream.width() << " height: " << stream.height() << " fps: " << stream.fps() << "\n";
+                //std::cerr << "  -- Ignoring stream: format: " << stream.format() << " width: " << stream.width() << " height: " << stream.height() << " fps: " << stream.fps() << "\n";
             }
 
             calculate_extrinsics();
 
             rtspServer->addServerMediaSession(sms);
             char* url = rtspServer->rtspURL(sms);
-            *env << "Play this stream using the URL \"" << url << "\"\n";
-            std::cout << "Play this stream using the URL \"" << url << "\"\n";
+            *env << "Play this stream using the URL " << url << "\n";
+            std::cout << "Play this stream using the URL " << url << "\n";
+            have_streams++;
 
             // query camera options
-            rtspServer->setSupportedOptions(sensor.getSensorName(), sensor.getSupportedOptions());
+            rtspServer->setSupportedOptions(sessname, sensor.getSupportedOptions());
 
             delete[] url;
         }
 
-        env->taskScheduler().doEventLoop(); // does not return
+        if (have_streams) {
+            std::cout << "Starting rs-server...\n";
+            env->taskScheduler().doEventLoop(); // does not return
+        }
+        else
+            std::cerr << "No streams created\n";
     }
 
     void calculate_extrinsics()
@@ -229,7 +274,7 @@ struct server
         env = NULL;
         delete scheduler;
         scheduler = NULL;
-        std::cout << "Rs-server downloading\n";
+        std::cout << "rs-server downloading\n";
     }
 
     // Make server a proper singleton

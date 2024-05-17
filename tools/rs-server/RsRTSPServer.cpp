@@ -1,5 +1,7 @@
 // License: Apache 2.0. See LICENSE file in root directory.
 // Copyright(c) 2020 Intel Corporation. All Rights Reserved.
+// Copyright(c) 2024 SpexAI. All Rights Reserved.
+// SpexAI spex-net branch: for multiple devices
 
 #include "RTSPServer.hh"
 #include "RTSPCommon.hh"
@@ -92,7 +94,7 @@ void RsRTSPServer::RsRTSPClientConnection::handleCmd_GET_PARAMETER(char const* t
     sensors = m_fOurRsRTSPServer.m_device.get()->getSensors();
     for(auto sensor : sensors)
     {
-        if(sensor.getSensorName().compare(sensorName) == 0)
+        if(std::string(sensor.getSessionName()).compare(sensorName) == 0)
         {
             try
             {
@@ -132,7 +134,7 @@ void RsRTSPServer::RsRTSPClientConnection::handleCmd_SET_PARAMETER(char const* t
     sensors = m_fOurRsRTSPServer.m_device.get()->getSensors();
     for(auto sensor : sensors)
     {
-        if(sensor.getSensorName().compare(sensorName) == 0)
+        if(std::string(sensor.getSessionName()).compare(sensorName) == 0)
         {
             try
             {
