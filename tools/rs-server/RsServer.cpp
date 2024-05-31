@@ -116,16 +116,17 @@ struct server
             }
             if (nth_device > 0 && nth_device != i)
                 continue;
-            if((sensor.getSensorName().compare(STEREO_SENSOR_NAME) == 0) && !rgb_only)
+            // i the t_urlPreSuffix, the streamName. And with depth or rgb the trackId
+            if(sensor.getSensorName().compare(RGB_SENSOR_NAME) == 0)
             {
-                snprintf(sessname, sizeof(sessname), "%u/depth", i);
-                sensor.setSessionName(sessname);
+                snprintf(sessname, sizeof(sessname), "%u-rgb", i);
+                sensor.setSessionName(sessname); // 1-rgb ?track1
                 sms = RsServerMediaSession::createNew(*env, sensor, sessname, "", "Session streamed by \"realsense streamer\"", False);
             }
-            else if(sensor.getSensorName().compare(RGB_SENSOR_NAME) == 0)
+            else if((sensor.getSensorName().compare(STEREO_SENSOR_NAME) == 0) && !rgb_only)
             {
-                snprintf(sessname, sizeof(sessname), "%u/rgb", i);
-                sensor.setSessionName(sessname);
+                snprintf(sessname, sizeof(sessname), "%u-depth", i);
+                sensor.setSessionName(sessname); // 1-depth ?track2
                 sms = RsServerMediaSession::createNew(*env, sensor, sessname, "", "Session streamed by \"realsense streamer\"", False);
             }
             else

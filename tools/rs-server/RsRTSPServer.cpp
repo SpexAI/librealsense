@@ -278,17 +278,21 @@ void RsRTSPServer::RsRTSPClientSession::handleCmd_SETUP(RTSPServer::RTSPClientCo
 {
     RTSPServer::RTSPClientSession::handleCmd_SETUP(t_ourClientConnection, t_urlPreSuffix, t_urlSuffix, t_fullRequestStr);
     ServerMediaSubsession* subsession;
-    if(t_urlSuffix[0] != '\0' && strcmp(fOurServerMediaSession->streamName(), t_urlPreSuffix) == 0)
+    if (!fOurServerMediaSession || !t_urlPreSuffix)
+        return;
+    if(t_urlSuffix[0] != '\0' && strcmp(fOurServerMediaSession->streamName(), t_urlSuffix) == 0)
     {
         // Non-aggregated operation.
-        // Look up the media subsession whose track id is "urlSuffix":
+        // Look up the media subsession whose track id is "urlPreSuffix" ("track1","track2",...)
         ServerMediaSubsessionIterator iter(*fOurServerMediaSession);
         while((subsession = iter.next()) != NULL)
         {
-            if(strcmp(subsession->trackId(), t_urlSuffix) == 0)
+            if (!t_urlPreSuffix[0] || strcmp(subsession->trackId(), t_urlPreSuffix) == 0)
             {
-                long long int profileKey = static_cast<RsServerMediaSession*>(fOurServerMediaSession)->getRsSensor().getStreamProfileKey(((RsServerMediaSubsession*)(subsession))->getStreamProfile());
-                m_streamProfiles[profileKey] = ((RsServerMediaSubsession*)(subsession))->getFrameQueue();
+                if (fOurServerMediaSession) {
+                    long long int profileKey = static_cast<RsServerMediaSession*>(fOurServerMediaSession)->getRsSensor().getStreamProfileKey(((RsServerMediaSubsession*)(subsession))->getStreamProfile());
+                    m_streamProfiles[profileKey] = ((RsServerMediaSubsession*)(subsession))->getFrameQueue();
+                }
                 break; // success
             }
         }
@@ -297,11 +301,15 @@ void RsRTSPServer::RsRTSPClientSession::handleCmd_SETUP(RTSPServer::RTSPClientCo
 
 void RsRTSPServer::RsRTSPClientSession::openRsCamera()
 {
+    if (!fOurServerMediaSession)
+        return;
     static_cast<RsServerMediaSession*>(fOurServerMediaSession)->openRsCamera(m_streamProfiles);
 }
 
 void RsRTSPServer::RsRTSPClientSession::closeRsCamera()
 {
+    if (!fOurServerMediaSession)
+        return;
     ((RsServerMediaSession*)fOurServerMediaSession)->closeRsCamera();
     for(int i = 0; i < fNumStreamStates; ++i)
     {
