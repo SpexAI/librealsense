@@ -106,6 +106,7 @@ const rs2_raw_data_buffer* rs2_build_debug_protocol_command(rs2_device* device, 
 * \return                               Device's response in a rs2_raw_data_buffer, which should be released by rs2_delete_raw_data
 */
 const rs2_raw_data_buffer* rs2_send_and_receive_raw_data(rs2_device* device, void* raw_data_to_send, unsigned size_of_raw_data_to_send, rs2_error** error);
+const rs2_raw_data_buffer* rs2_send_and_receive_const_raw_data(rs2_device* device, const void* raw_data_to_send, unsigned size_of_raw_data_to_send, rs2_error** error);
 
 /**
 * Test if the given device can be extended to the requested extension.

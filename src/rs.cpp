@@ -583,6 +583,19 @@ const rs2_raw_data_buffer* rs2_send_and_receive_raw_data(rs2_device* device, voi
 }
 HANDLE_EXCEPTIONS_AND_RETURN(nullptr, device)
 
+const rs2_raw_data_buffer* rs2_send_and_receive_const_raw_data(rs2_device* device, const void* raw_data_to_send, unsigned size_of_raw_data_to_send, rs2_error** error) BEGIN_API_CALL
+{
+    VALIDATE_NOT_NULL(device);
+
+    auto debug_interface = VALIDATE_INTERFACE(device->device, librealsense::debug_interface);
+
+    auto raw_data_buffer = static_cast<const uint8_t*>(raw_data_to_send);
+    std::vector<uint8_t> buffer_to_send(raw_data_buffer, raw_data_buffer + size_of_raw_data_to_send);
+    auto ret_data = debug_interface->send_receive_raw_data(buffer_to_send);
+    return new rs2_raw_data_buffer{ std::move(ret_data) };
+}
+HANDLE_EXCEPTIONS_AND_RETURN(nullptr, device)
+
 const unsigned char* rs2_get_raw_data(const rs2_raw_data_buffer* buffer, rs2_error** error) BEGIN_API_CALL
 {
     VALIDATE_NOT_NULL(buffer);

@@ -532,7 +532,7 @@ namespace rs2
         * retrieve data size from frame handle
         * \return               the number of bytes in frame
         */
-        const int get_data_size() const
+        int get_data_size() const
         {
             rs2_error* e = nullptr;
             auto r = rs2_get_frame_data_size(frame_ref, &e);
@@ -1044,7 +1044,7 @@ namespace rs2
             {
                 foreach_rs([&f, index](const frame& frm) {
                     if (frm.get_profile().stream_type() == RS2_STREAM_INFRARED &&
-                        frm.get_profile().stream_index() == index) f = frm;
+                        (size_t)frm.get_profile().stream_index() == index) f = frm;
                 });
             }
             return f;
@@ -1066,7 +1066,7 @@ namespace rs2
             {
                 foreach_rs([&f, index](const frame& frm) {
                     if (frm.get_profile().stream_type() == RS2_STREAM_FISHEYE &&
-                        frm.get_profile().stream_index() == index) f = frm;
+                        (size_t)frm.get_profile().stream_index() == index) f = frm;
                 });
             }
             return f;
@@ -1088,7 +1088,7 @@ namespace rs2
             {
                 foreach_rs([&f, index](const frame& frm) {
                     if (frm.get_profile().stream_type() == RS2_STREAM_POSE &&
-                        frm.get_profile().stream_index() == index) f = frm;
+                        (size_t)frm.get_profile().stream_index() == index) f = frm;
                 });
             }
             return f.as<pose_frame>();

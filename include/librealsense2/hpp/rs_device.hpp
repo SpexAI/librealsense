@@ -95,6 +95,11 @@ namespace rs2
             error::handle(e);
         }
 
+        device() : _dev(nullptr) {}
+        device(const device& dev)
+        {
+            *this = dev;
+        }
         device& operator=(const std::shared_ptr<rs2_device> dev)
         {
             _dev.reset();
@@ -107,7 +112,6 @@ namespace rs2
             _dev = dev._dev;
             return *this;
         }
-        device() : _dev(nullptr) {}
 
         operator bool() const
         {
@@ -167,7 +171,7 @@ namespace rs2
     {
     public:
         updatable() : device() {}
-        updatable(device d)
+        explicit updatable(const device& d)
             : device(d.get())
         {
             rs2_error* e = nullptr;
@@ -260,7 +264,7 @@ namespace rs2
     {
     public:
         update_device() : device() {}
-        update_device(device d)
+        explicit update_device(const device& d)
             : device(d.get())
         {
             rs2_error* e = nullptr;
@@ -296,7 +300,7 @@ namespace rs2
     class calibrated_device : public device
     {
     public:
-        calibrated_device(device d)
+        explicit calibrated_device(const device& d)
             : device(d.get())
         {}
 
@@ -324,7 +328,7 @@ namespace rs2
     class auto_calibrated_device : public calibrated_device
     {
     public:
-        auto_calibrated_device(device d)
+        explicit auto_calibrated_device(const device& d)
             : calibrated_device(d)
         {
             rs2_error* e = nullptr;
@@ -371,7 +375,7 @@ namespace rs2
          * \return                      New calibration table
         */
         template<class T>
-        calibration_table run_on_chip_calibration(std::string json_content, float* health, T callback, int timeout_ms = 5000) const
+        calibration_table run_on_chip_calibration(const std::string& json_content, float* health, T callback, int timeout_ms = 5000) const
         {
             std::vector<uint8_t> results;
 
@@ -425,7 +429,7 @@ namespace rs2
          * \param[in] timeout_ms        Timeout in ms
          * \return                      New calibration table
          */
-        calibration_table run_on_chip_calibration(std::string json_content, float* health, int timeout_ms = 5000) const
+        calibration_table run_on_chip_calibration(const std::string& json_content, float* health, int timeout_ms = 5000) const
         {
             std::vector<uint8_t> results;
 
@@ -477,7 +481,7 @@ namespace rs2
         * \return                        New calibration table
         */
         template<class T>
-        calibration_table run_tare_calibration(float ground_truth_mm, std::string json_content, float* health, T callback, int timeout_ms = 5000) const
+        calibration_table run_tare_calibration(float ground_truth_mm, const std::string& json_content, float* health, T callback, int timeout_ms = 5000) const
         {
             std::vector<uint8_t> results;
 
@@ -526,7 +530,7 @@ namespace rs2
          * \param[in] timeout_ms          Timeout in ms
          * \return                        New calibration table
          */
-        calibration_table run_tare_calibration(float ground_truth_mm, std::string json_content, float * health, int timeout_ms = 5000) const
+        calibration_table run_tare_calibration(float ground_truth_mm, const std::string& json_content, float * health, int timeout_ms = 5000) const
         {
             std::vector<uint8_t> results;
 
@@ -817,7 +821,7 @@ namespace rs2
         //using callback = std::function< void( rs2_calibration_status ) >;
         callback _callback;
     public:
-        calibration_change_callback( callback cb ) : _callback( cb ) {}
+        explicit calibration_change_callback(const callback& cb) : _callback( cb ) {}
 
         void on_calibration_change( rs2_calibration_status status ) noexcept override
         {
@@ -830,7 +834,7 @@ namespace rs2
     {
     public:
         calibration_change_device() = default;
-        calibration_change_device(device d)
+        explicit calibration_change_device(const device& d)
             : device(d.get())
         {
             rs2_error* e = nullptr;
@@ -868,7 +872,7 @@ namespace rs2
     {
     public:
         device_calibration() = default;
-        device_calibration( device d )
+        explicit device_calibration(const device& d )
         {
             rs2_error* e = nullptr;
             if( rs2_is_device_extendable_to( d.get().get(), RS2_EXTENSION_DEVICE_CALIBRATION, &e ))
@@ -892,7 +896,7 @@ namespace rs2
     class debug_protocol : public device
     {
     public:
-        debug_protocol(device d)
+        explicit debug_protocol(const device& d)
                 : device(d.get())
         {
             rs2_error* e = nullptr;
@@ -935,7 +939,8 @@ namespace rs2
 
             rs2_error* e = nullptr;
             std::shared_ptr<const rs2_raw_data_buffer> list(
-                    rs2_send_and_receive_raw_data(_dev.get(), (void*)input.data(), (uint32_t)input.size(), &e),
+                rs2_send_and_receive_const_raw_data(_dev.get(), input.data(),
+                      static_cast<uint32_t>(input.size()), &e),
                     rs2_delete_raw_data);
             error::handle(e);
 
@@ -955,7 +960,7 @@ namespace rs2
     {
     public:
         explicit device_list(std::shared_ptr<rs2_device_list> list)
-            : _list(move(list)) {}
+            : _list(std::move(list)) {}
 
         device_list()
             : _list(nullptr) {}
@@ -977,7 +982,7 @@ namespace rs2
 
         device_list& operator=(std::shared_ptr<rs2_device_list> list)
         {
-            _list = move(list);
+            _list = std::move(list);
             return *this;
         }
 
@@ -1000,10 +1005,10 @@ namespace rs2
             return size;
         }
 
-        device front() const { return std::move((*this)[0]); }
+        device front() const { return (*this)[0]; }
         device back() const
         {
-            return std::move((*this)[size() - 1]);
+            return (*this)[size() - 1];
         }
 
         class device_list_iterator
@@ -1071,7 +1076,7 @@ namespace rs2
     class tm2 : public calibrated_device // TODO: add to wrappers [Python done]
     {
     public:
-        tm2(device d)
+        explicit tm2(const device& d)
             : calibrated_device(d)
         {
             rs2_error* e = nullptr;
@@ -1183,7 +1188,7 @@ namespace rs2
     private:
 
         std::pair<sensor, stream_profile> get_sensor_profile(rs2_stream stream_type, int stream_index) {
-            for (auto s : query_sensors()) {
+            for (auto& s : query_sensors()) {
                 for (auto p : s.get_stream_profiles()) {
                     if (p.stream_type() == stream_type && p.stream_index() == stream_index)
                         return std::pair<sensor, stream_profile>(s, p);
