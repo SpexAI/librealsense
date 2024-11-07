@@ -14,7 +14,7 @@ namespace rs400
     class advanced_mode : public rs2::serializable_device
     {
     public:
-        advanced_mode(rs2::device d)
+        explicit advanced_mode(rs2::device d)
                 : rs2::serializable_device(d)
         {
             rs2_error* e = nullptr;

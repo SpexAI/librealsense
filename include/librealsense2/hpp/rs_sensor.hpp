@@ -14,7 +14,7 @@ namespace rs2
     class notification
     {
     public:
-        notification(rs2_notification* nt)
+        explicit notification(rs2_notification* nt)
         {
             rs2_error* e = nullptr;
             _description = rs2_get_notification_description(nt, &e);
@@ -43,7 +43,7 @@ namespace rs2
         * retrieve the notification description
         * \return            the notification description
         */
-        std::string get_description() const
+        std::string& get_description()
         {
             return _description;
         }
@@ -373,7 +373,7 @@ namespace rs2
     class color_sensor : public sensor
     {
     public:
-        color_sensor(sensor s)
+        explicit color_sensor(const sensor& s)
             : sensor(s.get())
         {
             rs2_error* e = nullptr;
@@ -383,13 +383,13 @@ namespace rs2
             }
             error::handle(e);
         }
-        operator bool() const { return _sensor.get() != nullptr; }
+        //operator bool() const { return _sensor.get() != nullptr; }
     };
 
     class motion_sensor : public sensor
     {
     public:
-        motion_sensor(sensor s)
+        explicit motion_sensor(const sensor& s)
             : sensor(s.get())
         {
             rs2_error* e = nullptr;
@@ -399,13 +399,13 @@ namespace rs2
             }
             error::handle(e);
         }
-        operator bool() const { return _sensor.get() != nullptr; }
+        //operator bool() const { return _sensor.get() != nullptr; }
     };
 
     class fisheye_sensor : public sensor
     {
     public:
-        fisheye_sensor(sensor s)
+        explicit fisheye_sensor(const sensor& s)
             : sensor(s.get())
         {
             rs2_error* e = nullptr;
@@ -415,13 +415,13 @@ namespace rs2
             }
             error::handle(e);
         }
-        operator bool() const { return _sensor.get() != nullptr; }
+        //operator bool() const { return _sensor.get() != nullptr; }
     };
 
     class roi_sensor : public sensor
     {
     public:
-        roi_sensor(sensor s)
+        explicit roi_sensor(const sensor& s)
             : sensor(s.get())
         {
             rs2_error* e = nullptr;
@@ -448,13 +448,13 @@ namespace rs2
             return roi;
         }
 
-        operator bool() const { return _sensor.get() != nullptr; }
+        //operator bool() const { return _sensor.get() != nullptr; }
     };
 
     class depth_sensor : public sensor
     {
     public:
-        depth_sensor(sensor s)
+        explicit depth_sensor(const sensor& s)
             : sensor(s.get())
         {
             rs2_error* e = nullptr;
@@ -476,14 +476,14 @@ namespace rs2
             return res;
         }
 
-        operator bool() const { return _sensor.get() != nullptr; }
+        // operator bool() const { return _sensor.get() != nullptr; }
         explicit depth_sensor(std::shared_ptr<rs2_sensor> dev) : depth_sensor(sensor(dev)) {}
     };
 
     class depth_stereo_sensor : public depth_sensor
     {
     public:
-        depth_stereo_sensor(sensor s): depth_sensor(s)
+        explicit depth_stereo_sensor(const sensor& s): depth_sensor(s)
         {
             rs2_error* e = nullptr;
             if (_sensor && rs2_is_sensor_extendable_to(_sensor.get(), RS2_EXTENSION_DEPTH_STEREO_SENSOR, &e) == 0 && !e)
@@ -504,14 +504,14 @@ namespace rs2
             return res;
         }
 
-        operator bool() const { return _sensor.get() != nullptr; }
+        // operator bool() const { return _sensor.get() != nullptr; }
     };
 
 
     class pose_sensor : public sensor
     {
     public:
-        pose_sensor(sensor s)
+        explicit pose_sensor(const sensor& s)
             : sensor(s.get())
         {
             rs2_error* e = nullptr;
@@ -615,14 +615,14 @@ namespace rs2
             return !!res;
         }
 
-        operator bool() const { return _sensor.get() != nullptr; }
+        // operator bool() const { return _sensor.get() != nullptr; }
         explicit pose_sensor(std::shared_ptr<rs2_sensor> dev) : pose_sensor(sensor(dev)) {}
     };
 
     class wheel_odometer : public sensor
     {
     public:
-        wheel_odometer(sensor s)
+        explicit wheel_odometer(const sensor& s)
             : sensor(s.get())
         {
             rs2_error* e = nullptr;
@@ -659,14 +659,14 @@ namespace rs2
             return !!res;
         }
 
-        operator bool() const { return _sensor.get() != nullptr; }
+        // operator bool() const { return _sensor.get() != nullptr; }
         explicit wheel_odometer(std::shared_ptr<rs2_sensor> dev) : wheel_odometer(sensor(dev)) {}
     };
 
     class calibrated_sensor : public sensor
     {
     public:
-        calibrated_sensor( sensor s )
+        explicit calibrated_sensor(const sensor& s )
             : sensor( s.get() )
         {
             rs2_error* e = nullptr;
@@ -677,7 +677,7 @@ namespace rs2
             error::handle( e );
         }
 
-        operator bool() const { return _sensor.get() != nullptr; }
+        //operator bool() const { return _sensor.get() != nullptr; }
 
         /** Override the intrinsics at the sensor level, as DEPTH_TO_RGB calibration does */
         void override_intrinsics( rs2_intrinsics const& intr )
@@ -728,7 +728,7 @@ namespace rs2
     class max_usable_range_sensor : public sensor
     {
     public:
-        max_usable_range_sensor(sensor s)
+        explicit max_usable_range_sensor(const sensor& s)
             : sensor(s.get())
         {
             rs2_error* e = nullptr;
@@ -739,7 +739,7 @@ namespace rs2
             error::handle(e);
         }
 
-        operator bool() const { return _sensor.get() != nullptr; }
+        //operator bool() const { return _sensor.get() != nullptr; }
 
         /** Retrieves the maximum range of the camera given the amount of ambient light in the scene.
         * \return max usable range in meters
@@ -756,7 +756,7 @@ namespace rs2
     class debug_stream_sensor : public sensor
     {
     public:
-        debug_stream_sensor( sensor s )
+        explicit debug_stream_sensor(const sensor& s )
             : sensor( s.get() )
         {
             rs2_error * e = nullptr;
@@ -767,7 +767,7 @@ namespace rs2
             error::handle( e );
         }
 
-        operator bool() const { return _sensor.get() != nullptr; }
+        //operator bool() const { return _sensor.get() != nullptr; }
 
         /**
         * Retrieves the list of debug stream profiles supported by the sensor.
