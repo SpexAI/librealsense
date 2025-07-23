@@ -39,7 +39,8 @@ int main() try
         return EXIT_SUCCESS;
     }
 
-    rs2::depth_sensor depth_sensor = device.query_sensors().front();
+    rs2::sensor sensor = device.query_sensors().front();
+    rs2::depth_sensor depth_sensor = sensor.as<rs2::depth_sensor>();
 
     // disable auto exposure before sending HDR configuration
     if (depth_sensor.get_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE))

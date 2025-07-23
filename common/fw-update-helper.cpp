@@ -358,7 +358,7 @@ namespace rs2
                                 {
                                     if (serial == d.get_info(RS2_CAMERA_INFO_FIRMWARE_UPDATE_ID))
                                     {
-                                        dfu = d;
+                                        dfu = d.as<update_device>();
                                         return true;
                                     }
                                 }

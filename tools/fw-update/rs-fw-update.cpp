@@ -83,7 +83,7 @@ std::vector<uint8_t> read_firmware_data(bool is_set, const std::string& file_pat
 
 
 void update(rs2::update_device fwu_dev, std::vector<uint8_t> fw_image)
-{  
+{
     std::cout << std::endl << "Firmware update started"<< std::endl << std::endl;
 
     if (ISATTY(FILENO(stdout)))
@@ -95,7 +95,25 @@ void update(rs2::update_device fwu_dev, std::vector<uint8_t> fw_image)
     }
     else
         fwu_dev.update(fw_image, [&](const float progress){});
-    
+
+    std::cout << std::endl << std::endl << "Firmware update done" << std::endl;
+}
+
+void update(rs2::device fw_dev, std::vector<uint8_t> fw_image)
+{
+    std::cout << std::endl << "Firmware update started"<< std::endl << std::endl;
+    rs2::update_device fwu_dev = fw_dev.as<rs2::update_device>();
+
+    if (ISATTY(FILENO(stdout)))
+    {
+        fwu_dev.update(fw_image, [&](const float progress)
+            {
+                printf("\rFirmware update progress: %d[%%]", (int)(progress * 100));
+            });
+    }
+    else
+        fwu_dev.update(fw_image, [&](const float progress){});
+
     std::cout << std::endl << std::endl << "Firmware update done" << std::endl;
 }
 
@@ -264,7 +282,7 @@ int main(int argc, char** argv) try
         {
             std::lock_guard<std::mutex> lk(mutex);
             if (d.is<rs2::update_device>() && (d.get_info(RS2_CAMERA_INFO_FIRMWARE_UPDATE_ID) == update_serial_number))
-                new_fw_update_device = d;
+                new_fw_update_device = d.as<rs2::update_device>();
             else
                 new_device = d;
         }

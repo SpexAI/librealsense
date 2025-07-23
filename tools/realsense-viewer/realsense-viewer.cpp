@@ -248,7 +248,8 @@ bool refresh_devices(std::mutex& m,
                                     (*dev_model_itr)->handle_hardware_events(data);
                                 }
                             }
-                            viewer_model.not_model->add_notification({ n.get_description(), n.get_severity(), n.get_category() });
+                            notification n_copy = n; // only needed for g++-9
+                            viewer_model.not_model->add_notification({ n_copy.get_description(), n_copy.get_severity(), n_copy.get_category() });
                         });
                 }
 
