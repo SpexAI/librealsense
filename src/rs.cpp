@@ -2112,7 +2112,7 @@ int rs2_processing_block_register_simple_option(rs2_processing_block* block, rs2
 {
     VALIDATE_NOT_NULL(block);
     VALIDATE_LE(min, max);
-    VALIDATE_RANGE(def, min, max);
+    //VALIDATE_RANGE(def, min, max);
     VALIDATE_LE(0, step);
 
     if (block->options->supports_option(option_id)) return false;
@@ -2682,7 +2682,11 @@ HANDLE_EXCEPTIONS_AND_RETURN(, sensor, option, val)
 void rs2_software_sensor_add_option(rs2_sensor* sensor, rs2_option option, float min, float max, float step, float def, int is_writable, rs2_error** error) BEGIN_API_CALL
 {
     VALIDATE_LE(min, max);
-    VALIDATE_RANGE(def, min, max);
+    if (def > max)
+        def = max;
+    else if (def < min)
+        def = min;
+    //VALIDATE_RANGE(def, min, max);
     VALIDATE_LE(0, step);
     VALIDATE_NOT_NULL(sensor);
     auto bs = VALIDATE_INTERFACE(sensor->sensor, librealsense::software_sensor);

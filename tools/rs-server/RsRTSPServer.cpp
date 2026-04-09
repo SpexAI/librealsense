@@ -37,6 +37,10 @@ std::string getOptionString(rs2_option t_opt, float t_min, float t_max, float t_
     std::ostringstream oss;
     // SPEX: changed wrong order of args: was {min, max, def, step}
     //       option_range is declared as { min, max, step, def }
+    if (t_def > t_max)
+        t_def = t_max;
+    else if (t_def < t_min)
+        t_def = t_min;
     oss << (int)t_opt << "{" << t_min << "," << t_max << "," << t_step << "," << t_def << "}"
         << ";";
     return oss.str();
