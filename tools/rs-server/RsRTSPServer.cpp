@@ -77,7 +77,7 @@ RsRTSPServer::RsRTSPClientConnection::~RsRTSPClientConnection() {}
 void RsRTSPServer::RsRTSPClientConnection::handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr) {
     fOurRTSPServer.closeAllClientSessionsForServerMediaSession(STEREO_SENSOR_NAME.c_str());
     fOurRTSPServer.closeAllClientSessionsForServerMediaSession(RGB_SENSOR_NAME.c_str());
-    
+
     RTSPServer::RTSPClientConnection::handleCmd_DESCRIBE(urlPreSuffix, urlSuffix, fullRequestStr);
 }
 
