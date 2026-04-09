@@ -143,7 +143,9 @@ bool ip_device::init_device_data(rs2::software_device sw_device)
                 }
                 else
                 {
-                    remote_sensors[control.sensorId]->sw_sensor->add_option(control.option, {control.range.min, control.range.max, control.range.def, control.range.step});
+                    // SPEX: changed wrong order of args: was {min, max, def, step}
+                    //       option_range is declared as { min, max, step, def }
+                    remote_sensors[control.sensorId]->sw_sensor->add_option(control.option, {control.range.min, control.range.max, control.range.step, control.range.def});
                 }
                 remote_sensors[control.sensorId]->sensors_option[control.option] = control.range.def;
                 try

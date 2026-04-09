@@ -620,7 +620,9 @@ void RsRTSPClient::continueAfterOPTIONS(RTSPClient *rtspClient, int resultCode, 
 
                 controlData.sensorId = counter == 0 ? 1 : 0;
                 int option_code;
-                int params_count = sscanf(controlStr.c_str(), "%d{%f,%f,%f,%f}", &option_code, &controlData.range.min, &controlData.range.max, &controlData.range.def, &controlData.range.step);
+                // SPEX: changed wrong order of args: was {min, max, def, step}
+                //       option_range is declared as { min, max, step, def }
+                int params_count = sscanf(controlStr.c_str(), "%d{%f,%f,%f,%f}", &option_code, &controlData.range.min, &controlData.range.max, &controlData.range.step, &controlData.range.def);
 
                 //to avoid sscanf warning
                 controlData.option = (rs2_option)option_code;

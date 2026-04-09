@@ -32,10 +32,12 @@ RsRTSPServer::RsRTSPServer(UsageEnvironment& t_env, std::shared_ptr<RsDevice> t_
 
 RsRTSPServer::~RsRTSPServer() {}
 
-std::string getOptionString(rs2_option t_opt, float t_min, float t_max, float t_def, float t_step)
+std::string getOptionString(rs2_option t_opt, float t_min, float t_max, float t_step, float t_def)
 {
     std::ostringstream oss;
-    oss << (int)t_opt << "{" << t_min << "," << t_max << "," << t_def << "," << t_step << "}"
+    // SPEX: changed wrong order of args: was {min, max, def, step}
+    //       option_range is declared as { min, max, step, def }
+    oss << (int)t_opt << "{" << t_min << "," << t_max << "," << t_step << "," << t_def << "}"
         << ";";
     return oss.str();
 }
@@ -49,7 +51,9 @@ char const* RsRTSPServer::allowedCommandNames()
         m_supportedOptionsStr.append("[");
         for(auto option : optionsPair.second)
         {
-            m_supportedOptionsStr.append(getOptionString(option.m_opt, option.m_range.min, option.m_range.max, option.m_range.def, option.m_range.step));
+            // SPEX: changed wrong order of args: was {min, max, def, step}
+            //       option_range is declared as { min, max, step, def }
+            m_supportedOptionsStr.append(getOptionString(option.m_opt, option.m_range.min, option.m_range.max, option.m_range.step, option.m_range.def));
         }
         m_supportedOptionsStr.append("]");
     }
